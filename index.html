@@ -1,0 +1,1151 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>교회학교 중앙연회연합회 통합 관리 시스템 (회의록/행사계획/회계보고)</title>
+    <style>
+        /* 글로벌 스타일 및 Reset */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Malgun Gothic", Dotum, sans-serif;
+            background-color: #f0f2f5;
+            color: #333;
+            display: flex;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        /* 사이드바 스타일 */
+        .sidebar {
+            width: 320px;
+            background-color: #1e293b;
+            color: #fff;
+            display: flex;
+            flex-direction: column;
+            border-right: 1px solid #334155;
+            z-index: 10;
+            flex-shrink: 0;
+        }
+        .sidebar-header {
+            padding: 20px;
+            background-color: #0f172a;
+            border-bottom: 1px solid #334155;
+        }
+        .sidebar-header h1 {
+            font-size: 16px;
+            font-weight: bold;
+            color: #f8fafc;
+            line-height: 1.4;
+        }
+        .sidebar-scroll {
+            flex: 1;
+            overflow-y: auto;
+            padding: 15px;
+        }
+        .section-title {
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: #94a3b8;
+            margin: 20px 0 8px 0;
+            font-weight: bold;
+        }
+        .section-title:first-child {
+            margin-top: 0;
+        }
+       
+        /* 버튼 공통 */
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            padding: 10px 14px;
+            background-color: #3b82f6;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-size: 13px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background 0.2s;
+            margin-bottom: 8px;
+            text-align: center;
+        }
+        .btn:hover {
+            background-color: #2563eb;
+        }
+        .btn-success { background-color: #10b981; }
+        .btn-success:hover { background-color: #059669; }
+        .btn-danger { background-color: #ef4444; }
+        .btn-danger:hover { background-color: #dc2626; }
+        .btn-secondary { background-color: #475569; }
+        .btn-secondary:hover { background-color: #334155; }
+       
+        .grid-buttons {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+            margin-bottom: 15px;
+        }
+        .grid-buttons .btn {
+            margin-bottom: 0;
+            font-size: 12px;
+            padding: 8px;
+        }
+
+        /* 페이지 목록 링크 */
+        .page-list {
+            list-style: none;
+            margin-bottom: 20px;
+        }
+        .page-item {
+            display: flex;
+            align-items: center;
+            background-color: #334155;
+            margin-bottom: 6px;
+            border-radius: 6px;
+            overflow: hidden;
+            transition: all 0.2s;
+        }
+        .page-item.active {
+            background-color: #3b82f6;
+            box-shadow: 0 0 10px rgba(59, 130, 246, 0.3);
+        }
+        .page-link {
+            flex: 1;
+            padding: 10px 12px;
+            color: #e2e8f0;
+            text-decoration: none;
+            font-size: 13px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            cursor: pointer;
+        }
+        .page-item.active .page-link {
+            color: white;
+            font-weight: bold;
+        }
+        .delete-page-btn {
+            background: transparent;
+            border: none;
+            color: #94a3b8;
+            padding: 10px;
+            cursor: pointer;
+            font-size: 12px;
+        }
+        .delete-page-btn:hover {
+            color: #ef4444;
+        }
+
+        /* 메인 작업 영역 */
+        .main-content {
+            flex: 1;
+            overflow-y: auto;
+            background-color: #cbd5e1;
+            padding: 40px 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        /* A4 용지 규격화 스타일 */
+        .a4-page {
+            background: white;
+            width: 210mm;
+            min-height: 297mm;
+            padding: 20mm 15mm;
+            margin-bottom: 30px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+            position: relative;
+            display: none; /* 기본적으로 숨김, 활성화된 페이지만 표기 */
+            box-sizing: border-box;
+        }
+        .a4-page.active {
+            display: block;
+        }
+
+        /* 공통 헤더/푸터 서식 */
+        .page-footer-tag {
+            position: absolute;
+            bottom: 20mm;
+            left: 15mm;
+            font-size: 11px;
+            background-color: #e2e8f0;
+            padding: 2px 6px;
+            color: #334155;
+            font-family: sans-serif;
+        }
+        .page-numbering {
+            position: absolute;
+            bottom: 15mm;
+            left: 0;
+            right: 0;
+            text-align: center;
+            font-size: 12px;
+            color: #333;
+        }
+
+        /* 타이틀 디자인 요소 */
+        .header-url {
+            text-align: right;
+            font-size: 11px;
+            color: #7b1fa2;
+            text-decoration: underline;
+            margin-bottom: 2px;
+        }
+        .header-sub-info {
+            text-align: right;
+            font-size: 12px;
+            color: #333;
+            line-height: 1.4;
+            margin-bottom: 25px;
+        }
+        .main-motto {
+            text-align: center;
+            font-size: 18px;
+            color: #2e7d32;
+            font-weight: bold;
+            margin-bottom: 40px;
+            word-spacing: 3px;
+        }
+        .main-title {
+            text-align: center;
+            font-size: 32px;
+            font-weight: bold;
+            letter-spacing: 2px;
+            margin-bottom: 40px;
+            color: #000;
+        }
+
+        /* 로고 레이아웃 스타일 */
+        .logo-container {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 50px;
+        }
+        .emblem-svg {
+            width: 220px;
+            height: 220px;
+        }
+
+        /* 안내 정보 테이블 서식 */
+        .info-block {
+            margin: 0 auto 50px auto;
+            width: 85%;
+            font-size: 15px;
+            line-height: 1.8;
+        }
+        .info-row {
+            display: flex;
+            margin-bottom: 12px;
+            align-items: baseline;
+        }
+        .info-label {
+            width: 70px;
+            font-weight: bold;
+            flex-shrink: 0;
+        }
+        .info-value {
+            flex: 1;
+            border-bottom: 1px dashed transparent;
+        }
+        .info-value:hover, .info-value:focus {
+            border-bottom-color: #3b82f6;
+            outline: none;
+        }
+
+        /* 하단 단체명 서식 */
+        .footer-org-box {
+            margin-top: 60px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+        }
+        .org-left {
+            font-size: 14px;
+            line-height: 1.4;
+            font-weight: bold;
+            color: #334155;
+            margin-right: 25px;
+            text-align: justify;
+            text-align-last: justify; /* 양끝 정렬 효과 */
+            width: 110px; /* 글자가 줄바꿈되지 않도록 폭 확장 */
+            flex-shrink: 0;
+        }
+        .org-right {
+            font-size: 26px;
+            font-weight: bold;
+            color: #1a237e;
+            letter-spacing: 1px;
+            white-space: nowrap;
+        }
+
+        /* 순서식 점선 정렬 레이아웃 - 가운데 수평 정렬 수정 */
+        .section-header-title {
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 15px;
+            color: #000;
+        }
+        .conductor-line {
+            text-align: right;
+            font-size: 14px;
+            font-weight: bold;
+            margin-bottom: 25px;
+        }
+        .program-row {
+            display: flex;
+            align-items: center; /* 아래 처짐 방지: 수평 중앙 정렬 */
+            margin-bottom: 14px;
+            font-size: 14px;
+            width: 100%;
+        }
+        .program-title {
+            font-weight: bold;
+            white-space: nowrap;
+            padding-right: 5px;
+            min-width: 70px;
+        }
+        .program-leader {
+            flex: 1;
+            margin: 0 8px;
+            border-bottom: 1px dotted #000;
+            height: 1px; /* 선 굵기 안정화 */
+            align-self: center; /* 부모 행 중앙에 선이 놓이도록 설정 */
+        }
+        .program-name {
+            white-space: nowrap;
+            text-align: right;
+            padding-left: 5px;
+            min-width: 150px;
+        }
+       
+        /* 세부 내용 상자 */
+        .lyrics-box {
+            margin: 8px 0 15px 75px;
+            font-size: 12.5px;
+            color: #444;
+            line-height: 1.6;
+        }
+        .scripture-box {
+            margin: 12px 0 20px 20px;
+            font-size: 13.5px;
+            line-height: 1.6;
+            font-weight: 500;
+        }
+        .scripture-item {
+            margin-bottom: 6px;
+            text-indent: -18px;
+            padding-left: 18px;
+        }
+        .announcement-box {
+            margin: 10px 0 20px 35px;
+            font-size: 13px;
+            line-height: 1.7;
+        }
+        .announcement-item {
+            margin-bottom: 6px;
+            text-indent: -18px;
+            padding-left: 18px;
+        }
+
+        /* 안건 목록 및 박스 서식 */
+        .agenda-box {
+            margin: 10px 0 25px 90px;
+            font-size: 13.5px;
+            line-height: 1.7;
+        }
+        .border-container-box {
+            border: 1px solid #7f8c8d;
+            padding: 15px;
+            margin-top: 30px;
+            font-size: 13px;
+            line-height: 1.75;
+        }
+        .border-box-title {
+            font-weight: bold;
+            margin-bottom: 8px;
+            color: #000;
+        }
+
+        /* 문서 표 서식 스타일 */
+        .doc-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+            font-size: 13px;
+        }
+        .doc-table th, .doc-table td {
+            border: 1px solid #000;
+            padding: 8px 6px;
+            height: 32px;
+        }
+        .doc-table th {
+            background-color: #f2f2f2;
+            font-weight: bold;
+            text-align: center;
+        }
+        .doc-table td {
+            text-align: center;
+        }
+        .doc-table td.align-left {
+            text-align: left;
+            padding-left: 8px;
+        }
+
+        /* 회계보고서 상단 서식 */
+        .finance-date-line {
+            font-size: 14px;
+            margin: 15px 0 5px 2px;
+            font-family: sans-serif;
+            font-weight: 500;
+        }
+       
+        /* 빈 페이지 서식 */
+        .blank-placeholder {
+            border: 2px dashed #cbd5e1;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #94a3b8;
+            font-size: 16px;
+        }
+
+        [contenteditable="true"]:focus {
+            outline: none;
+            background-color: #eff6ff;
+            box-shadow: 0 0 0 2px #3b82f6;
+            border-radius: 2px;
+        }
+
+        .tr-wrap {
+            position: relative;
+        }
+        .row-action-btn {
+            position: absolute;
+            left: -35px;
+            top: 4px;
+            background-color: #ef4444;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            width: 24px;
+            height: 24px;
+            cursor: pointer;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            font-weight: bold;
+            z-index: 5;
+        }
+        tr:hover .row-action-btn, .program-row:hover .row-action-btn {
+            display: inline-flex;
+        }
+
+        /* 인쇄 및 화면 요소 제어용 스타일 */
+        @media print {
+            body {
+                background-color: white;
+                overflow: visible;
+                height: auto;
+            }
+            .sidebar, .no-print {
+                display: none !important;
+            }
+            .main-content {
+                padding: 0 !important;
+                background-color: white !important;
+                overflow: visible !important;
+                width: 100% !important;
+            }
+            .a4-page {
+                box-shadow: none !important;
+                margin-bottom: 0 !important;
+                page-break-after: always !important;
+                display: block !important;
+                width: 210mm !important;
+                height: 297mm !important;
+            }
+            .row-action-btn {
+                display: none !important;
+            }
+            [contenteditable="true"]:focus {
+                background-color: transparent !important;
+                box-shadow: none !important;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- 왼쪽 관리자 사이드바 -->
+    <div class="sidebar">
+        <div class="sidebar-header">
+            <h1>교회학교 중앙연회연합회<br>통합 문서 빌더 시스템</h1>
+        </div>
+       
+        <div class="sidebar-scroll">
+            <div class="section-title">문서 전체 관리</div>
+            <button class="btn btn-success" onclick="window.print()">🖨️ PDF 저장 및 전체 인쇄</button>
+            <button class="btn btn-secondary" onclick="saveToLocalStorage()">💾 브라우저 수동 저장</button>
+            <button class="btn btn-danger" onclick="resetToDefault()">🔄 기본 양식 초기화</button>
+
+            <div class="section-title">현재 문서 페이지 목차</div>
+            <ul class="page-list" id="pageListContainer">
+                <!-- 동적 생성 구역 -->
+            </ul>
+
+            <div class="section-title">4쪽 이후 새 페이지 구성 추가</div>
+            <div class="grid-buttons">
+                <button class="btn" onclick="addNewPage('worship')">+ 예배식 추가</button>
+                <button class="btn" onclick="addNewPage('meeting')">+ 회의록 추가</button>
+                <button class="btn" onclick="addNewPage('event')">+ 행사계획 추가</button>
+                <button class="btn" onclick="addNewPage('finance')">+ 회계보고 추가</button>
+            </div>
+            <button class="btn btn-secondary" onclick="addNewPage('blank')">+ 완전 빈 페이지 추가</button>
+
+            <div id="contextualEditorPanel">
+                <div class="section-title">현재 페이지 데이터 제어</div>
+                <div id="contextControls">
+                    <p style="font-size:12px; color:#94a3b8;">페이지를 선택하면 세부 편집기가 활성화됩니다.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 오른쪽 메인 A4 도큐먼트 뷰포트 -->
+    <div class="main-content" id="documentWorkspace">
+        <!-- 스크립트로 구성 요소 로드 -->
+    </div>
+
+    <script>
+        // 기본 표준 데이터 정의
+        const DEFAULT_PAGES = [
+            {
+                id: "page-1",
+                type: "cover",
+                title: "1쪽 - 공동 표지",
+                html: `
+                    <div class="header-url" contenteditable="true">http://www.kmcja.kr</div>
+                    <div class="header-sub-info" contenteditable="true">
+                        기독교대한감리회 교회학교 중앙연회연합회<br>
+                        Joongang Annual Conference of Korean Methodist Mission School
+                    </div>
+                   
+                    <div class="main-motto" contenteditable="true">표어: 꿈을 만드는 교회학교(행 2:17)</div>
+                   
+                    <div class="main-title" contenteditable="true">27년 정책협의회</div>
+                   
+                    <div class="logo-container" style="display: flex; flex-direction: column; align-items: center; gap: 10px; margin-bottom: 40px;">
+                        <img id="coverLogoImg" src="logo.png" class="emblem-svg" alt="로고 이미지" style="object-fit: contain; max-height: 220px;">
+                       
+                        <div class="no-print" style="background: #f1f5f9; padding: 8px 14px; border-radius: 6px; border: 1px dashed #cbd5e1; text-align: center;">
+                            <label for="logoFileInput" style="font-size: 12px; font-weight: bold; color: #475569; cursor: pointer; display: block; margin-bottom: 5px;">내 컴퓨터에서 로고 이미지 불러오기</label>
+                            <input type="file" id="logoFileInput" accept="image/*" style="font-size: 11px; color: #64748b;" onchange="window.handleLogoUpload(event)">
+                            <div style="font-size: 10px; color: #94a3b8; margin-top: 3px;">* 안정적인 보관을 위해 1MB 이하의 최적화된 파일(PNG/JPG)을 권장합니다.</div>
+                        </div>
+                    </div>
+                   
+                    <div class="info-block">
+                        <div class="info-row">
+                            <div class="info-label">◎ 일시 :</div>
+                            <div class="info-value" contenteditable="true">2027년 3월 13일(토) 오전 11시</div>
+                        </div>
+                        <div class="info-row">
+                            <div class="info-label">◎ 장소 :</div>
+                            <div class="info-value" contenteditable="true">광주교회(광주하남 지방)</div>
+                        </div>
+                        <div class="info-row">
+                            <div class="info-label">◎ 회장 :</div>
+                            <div class="info-value" contenteditable="true">박윤수 장로 (구리지방, 하늘샘교회)</div>
+                        </div>
+                    </div>
+                   
+                    <div class="footer-org-box">
+                        <div class="org-left" contenteditable="true">기독교대한감리회</div>
+                        <div class="org-right" contenteditable="true">교회학교 중앙연회연합회</div>
+                    </div>
+                   
+                    <div class="page-footer-tag" contenteditable="true">정책협의회/광주교회/27-02-00</div>
+                    <div class="page-numbering">- 1 -</div>
+                `
+            },
+            {
+                id: "page-2",
+                type: "worship",
+                title: "2쪽 - 제1부 예배",
+                html: `
+                    <div class="section-header-title" contenteditable="true">[제1부 예배]</div>
+                    <div class="conductor-line" contenteditable="true">사회 : 박의선 장로(운영부회장)</div>
+                   
+                    <div id="worshipRowsContainer">
+                        <div class="program-row">
+                            <div class="program-title" contenteditable="true">조용히기도</div>
+                            <div class="program-leader"></div>
+                            <div class="program-name" contenteditable="true">다 같이</div>
+                        </div>
+                        <div class="program-row">
+                            <div class="program-title" contenteditable="true">찬 송</div>
+                            <div class="program-leader"></div>
+                            <div class="program-name" contenteditable="true">다 같이</div>
+                        </div>
+                        <div class="lyrics-box" contenteditable="true">
+                            1절 : 나 맡은 본분은 구주를 높이고 뭇 영혼 구원 얻도록 잘 인도함이라<br>
+                            2절 : 부름심 받들어 내 형제 섬기며 구주의 뜻을 따라서 내 정성 다하리<br>
+                            3절 : 주 앞에 모든 일 잘 행케 하시고 이후에 주님 뵈올 때 상 받게 하소서<br>
+                            4절 : 나 항상 깨어서 늘 기도드리며 내 믿음 변치않도록 날 도와주소서 &lt;아멘&gt;
+                        </div>
+                        <div class="program-row">
+                            <div class="program-title" contenteditable="true">기 도</div>
+                            <div class="program-leader"></div>
+                            <div class="program-name" contenteditable="true">홍길동 장로(구리지방 회장)</div>
+                        </div>
+                        <div class="program-row">
+                            <div class="program-title" contenteditable="true">성 경</div>
+                            <div class="program-leader"></div>
+                            <div class="program-name" contenteditable="true">홍길동 장로(구리지방 회장)</div>
+                        </div>
+                        <div class="scripture-box" contenteditable="true">
+                            <div class="scripture-item">1. 아람 왕의 군대 장관 나아만은 그의 주인 앞에서 크고 존귀한 자니 이는 여호와께서 전에 그에게 아람을 구원하게 하셨음이라 그는 큰 용사이나 나병환자더라</div>
+                            <div class="scripture-item">2. 전에 아람 사람이 떼를 지어 나가서 이스라엘 땅에서 어린 소녀 하나를 사로잡으매 그가 나아만의 아내에게 수종들더니</div>
+                            <div class="scripture-item">3. 그의 여주인에게 이르되 우리 주인이 사마리아에 계신 선지자 앞에 계셨으면 좋겠나이다 그가 그 나병을 고치리이다 하는지라</div>
+                        </div>
+                        <div class="program-row">
+                            <div class="program-title" contenteditable="true">말 씀</div>
+                            <div class="program-leader"></div>
+                            <div class="program-name" contenteditable="true">홍길동 담임목사</div>
+                        </div>
+                        <div class="program-row">
+                            <div class="program-title" contenteditable="true">광 고</div>
+                            <div class="program-leader"></div>
+                            <div class="program-name" contenteditable="true">홍길동 총무</div>
+                        </div>
+                        <div class="announcement-box" contenteditable="true">
+                            <div class="announcement-item">1. 연합회를 위하여 애써 주시고 정책협의회에 참석해 주신 각 부회장님, 지방회장님과 총무님께 감사드립니다.</div>
+                            <div class="announcement-item">2. 예배 후 상견례와 안건 회의를 시작하겠습니다.</div>
+                            <div class="announcement-item">3. 귀한 장소를 마련해 주신 광주교회 최종호 담임 목사님과 교회에 깊이 감사드립니다.</div>
+                            <div class="announcement-item">4. 예배 후 기념촬영이 있으며, 이후에 바로 회의가 진행될 예정입니다.</div>
+                            <div class="announcement-item">5. 전국 목요기도회가 2025. 3. 27(목) 감리교본부에서 중앙연회 주관으로 진행하오니 많은 참석 부탁드립니다.</div>
+                            <div class="announcement-item">6. 12대 회장 이·취임 및 임원결단 예배가 3. 30(주일) 오후 4시에 구리지방 신갈교회에서 진행됩니다. 기도로 준비해 주시고, 함께 참여해서 축하와 응원 부탁드립니다.</div>
+                        </div>
+                        <div class="program-row">
+                            <div class="program-title" contenteditable="true">축 도</div>
+                            <div class="program-leader"></div>
+                            <div class="program-name" contenteditable="true">홍길동 담임목사</div>
+                        </div>
+                        <div class="program-row">
+                            <div class="program-title" contenteditable="true">기념촬영</div>
+                            <div class="program-leader"></div>
+                            <div class="program-name" contenteditable="true">다 같이</div>
+                        </div>
+                    </div>
+                   
+                    <div class="page-footer-tag" contenteditable="true">정책협의회/광주교회/27-02-00</div>
+                    <div class="page-numbering">- 2 -</div>
+                `
+            },
+            {
+                id: "page-3",
+                type: "meeting",
+                title: "3쪽 - 제2부 회의",
+                html: `
+                    <div class="section-header-title" contenteditable="true">[제2부 회의]</div>
+                    <div class="conductor-line" contenteditable="true">사 회 : 회장 박윤수 장로</div>
+                   
+                    <div id="meetingRowsContainer">
+                        <div class="program-row">
+                            <div class="program-title" contenteditable="true">기 도</div>
+                            <div class="program-leader"></div>
+                            <div class="program-name" contenteditable="true">기획부회장 이시후장로</div>
+                        </div>
+                        <div class="program-row">
+                            <div class="program-title" contenteditable="true">회장인사</div>
+                            <div class="program-leader"></div>
+                            <div class="program-name" contenteditable="true">회장 박윤수 장로</div>
+                        </div>
+                        <div class="program-row">
+                            <div class="program-title" contenteditable="true">상견례</div>
+                            <div class="program-leader"></div>
+                            <div class="program-name" contenteditable="true">회장 박윤수 장로</div>
+                        </div>
+                        <div class="program-row">
+                            <div class="program-title" contenteditable="true">안건회의</div>
+                            <div class="program-leader"></div>
+                            <div class="program-name" contenteditable="true">회장 박윤수 장로</div>
+                        </div>
+                       
+                        <div class="agenda-box" contenteditable="true">
+                            안건 : 1. 2027 임원조직표<br>
+                            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;2. 2027 행사계획안<br>
+                            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;3. 2027 예산안<br>
+                            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;4. 2027 행사별 준비위원장<br>
+                            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;5. 2027 임원회의 장소<br>
+                            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;6. 제12회 어린이 찬양대회<br>
+                            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;6. 제13대 회장 이취임 및 임원결단 감사 예배<br>
+                            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;7. 기타토의
+                        </div>
+                       
+                        <div class="program-row">
+                            <div class="program-title" contenteditable="true">폐회기도</div>
+                            <div class="program-leader"></div>
+                            <div class="program-name" contenteditable="true">운영부회장 박의선 장로</div>
+                        </div>
+                    </div>
+                   
+                    <div class="border-container-box">
+                        <div class="border-box-title" contenteditable="true">[다음 세대를 위한 기도]</div>
+                        <div contenteditable="true">
+                            1. 다음 세대가 인생의 주인이신 하나님을 인격적으로 만나고 온전한 복음을 경험하여 하나님을 아는 세대가 되게 하여 주소서<br>
+                            2. 세상의 풍조에 휩쓸리지 않고 다니엘처럼 뜻을 정하고 자기를 더럽히지 않으며 말씀과 기도롤 늘 깨어있는 하나님의 자녀로 성장하게 하소서<br>
+                            3. 교육 현장을 축복하사 왕따, 동성애, 성폭력, 학원 폭력들이 사라지게 하시고 예수님의 성품을 지닌 자녀들로 세워지게 하소서<br>
+                            4. 다음 세대에 만남의 축복을 주사 좋은 친구, 인격적인 선생님을 만나게 하소서
+                        </div>
+                    </div>
+                   
+                    <div class="page-footer-tag" contenteditable="true">정책협의회/광주교회/27-02-00</div>
+                    <div class="page-numbering">- 3 -</div>
+                `
+            },
+            {
+                id: "page-4",
+                type: "event",
+                title: "4쪽 - 행사 계획안",
+                html: `
+                    <div class="main-title" style="font-size:24px; margin-bottom:20px;" contenteditable="true">2027년 행사 계획안</div>
+                    <table class="doc-table" id="eventPlanTable">
+                        <thead>
+                            <tr>
+                                <th style="width: 12%;">구분</th>
+                                <th style="width: 18%;">일자</th>
+                                <th style="width: 40%;">사업내용</th>
+                                <th style="width: 18%;">준비위원장</th>
+                                <th style="width: 12%;">비고</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td contenteditable="true"></td>
+                                <td contenteditable="true">00월 00일</td>
+                                <td class="align-left" contenteditable="true">회장이취임및임원결단예배</td>
+                                <td contenteditable="true">이시후 장로</td>
+                                <td contenteditable="true"></td>
+                            </tr>
+                            <tr><td contenteditable="true"></td><td contenteditable="true"></td><td class="align-left" contenteditable="true"></td><td contenteditable="true"></td><td contenteditable="true"></td></tr>
+                            <tr><td contenteditable="true"></td><td contenteditable="true"></td><td class="align-left" contenteditable="true"></td><td contenteditable="true"></td><td contenteditable="true"></td></tr>
+                            <tr><td contenteditable="true"></td><td contenteditable="true"></td><td class="align-left" contenteditable="true"></td><td contenteditable="true"></td><td contenteditable="true"></td></tr>
+                            <tr><td contenteditable="true"></td><td contenteditable="true"></td><td class="align-left" contenteditable="true"></td><td contenteditable="true"></td><td contenteditable="true"></td></tr>
+                            <tr><td contenteditable="true"></td><td contenteditable="true"></td><td class="align-left" contenteditable="true"></td><td contenteditable="true"></td><td contenteditable="true"></td></tr>
+                            <tr><td contenteditable="true"></td><td contenteditable="true"></td><td class="align-left" contenteditable="true"></td><td contenteditable="true"></td><td contenteditable="true"></td></tr>
+                            <tr><td contenteditable="true"></td><td contenteditable="true"></td><td class="align-left" contenteditable="true"></td><td contenteditable="true"></td><td contenteditable="true"></td></tr>
+                            <tr><td contenteditable="true"></td><td contenteditable="true"></td><td class="align-left" contenteditable="true"></td><td contenteditable="true"></td><td contenteditable="true"></td></tr>
+                            <tr><td contenteditable="true"></td><td contenteditable="true"></td><td class="align-left" contenteditable="true"></td><td contenteditable="true"></td><td contenteditable="true"></td></tr>
+                        </tbody>
+                    </table>
+                    <div class="page-footer-tag" contenteditable="true">정책협의회/광주교회/27-02-00</div>
+                    <div class="page-numbering">- 4 -</div>
+                `
+            },
+            {
+                id: "page-5",
+                type: "finance",
+                title: "5쪽 - 회계 보고서",
+                html: `
+                    <div class="main-title" style="font-size:26px; margin-bottom:5px; letter-spacing:4px;" contenteditable="true">회 계 보 고 서</div>
+                    <div class="finance-date-line" contenteditable="true">2027.01. 01 ~ 01. 01</div>
+                    <table class="doc-table" id="financeReportTable">
+                        <thead>
+                            <tr>
+                                <th colspan="2" style="width: 50%;">수 입 부</th>
+                                <th colspan="2" style="width: 50%;">지 출 부</th>
+                            </tr>
+                            <tr>
+                                <th style="width: 33%;">사업내용</th>
+                                <th style="width: 17%;">금 액</th>
+                                <th style="width: 33%;">사업내용</th>
+                                <th style="width: 17%;">금 액</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td class="align-left" contenteditable="true"></td>
+                                <td contenteditable="true"></td>
+                                <td class="align-left" contenteditable="true"></td>
+                                <td contenteditable="true"></td>
+                            </tr>
+                            <tr>
+                                <td class="align-left" contenteditable="true"></td>
+                                <td contenteditable="true"></td>
+                                <td class="align-left" contenteditable="true"></td>
+                                <td contenteditable="true"></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    <div class="page-footer-tag" contenteditable="true">정책협의회/광주교회/27-02-00</div>
+                    <div class="page-numbering">- 5 -</div>
+                `
+            }
+        ];
+
+        // 앱 상태 데이터 변수
+        let state = {
+            pages: [],
+            activePageId: "page-1"
+        };
+
+        // 로컬 컴퓨터 로고 파일 업로드 핸들러
+        window.handleLogoUpload = function(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            if (file.size > 2 * 1024 * 1024) {
+                alert("이미지 용량이 너무 큽니다! 2MB 이하의 파일을 선택해 주세요.");
+                return;
+            }
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const img = document.getElementById("coverLogoImg");
+                if (img) {
+                    img.src = e.target.result;
+                   
+                    const pageDiv = document.getElementById("page-1");
+                    const coverPageObj = state.pages.find(p => p.id === "page-1");
+                    if (coverPageObj && pageDiv) {
+                        coverPageObj.html = pageDiv.innerHTML;
+                        autoSave();
+                    }
+                }
+            };
+            reader.readAsDataURL(file);
+        };
+
+        // 초기 구동 및 로드 처리
+        function initApp() {
+            const savedData = localStorage.getItem("CHURCH_DOC_BUILDER_DATA_V2");
+            if (savedData) {
+                try {
+                    state = JSON.parse(savedData);
+                } catch(e) {
+                    state.pages = JSON.parse(JSON.stringify(DEFAULT_PAGES));
+                    state.activePageId = "page-1";
+                }
+            } else {
+                state.pages = JSON.parse(JSON.stringify(DEFAULT_PAGES));
+                state.activePageId = "page-1";
+            }
+            renderSidebarList();
+            renderWorkspacePages();
+            updateContextControls();
+        }
+
+        // 사이드바 목록 갱신
+        function renderSidebarList() {
+            const container = document.getElementById("pageListContainer");
+            container.innerHTML = "";
+           
+            state.pages.forEach((page, index) => {
+                const li = document.createElement("li");
+                li.className = `page-item ${page.id === state.activePageId ? 'active' : ''}`;
+               
+                const a = document.createElement("a");
+                a.className = "page-link";
+                a.innerText = page.title;
+                a.onclick = () => switchPage(page.id);
+               
+                li.appendChild(a);
+               
+                if (index >= 5) {
+                    const delBtn = document.createElement("button");
+                    delBtn.className = "delete-page-btn";
+                    delBtn.innerHTML = "✕";
+                    delBtn.onclick = (e) => {
+                        e.stopPropagation();
+                        deletePage(page.id);
+                    };
+                    li.appendChild(delBtn);
+                }
+               
+                container.appendChild(li);
+            });
+        }
+
+        // 메인 작업 공간 렌더링
+        function renderWorkspacePages() {
+            const workspace = document.getElementById("documentWorkspace");
+            workspace.innerHTML = "";
+
+            state.pages.forEach((page, index) => {
+                const pageDiv = document.createElement("div");
+                pageDiv.className = `a4-page ${page.id === state.activePageId ? 'active' : ''}`;
+                pageDiv.id = page.id;
+                pageDiv.innerHTML = page.html;
+
+                pageDiv.addEventListener("input", () => {
+                    page.html = pageDiv.innerHTML;
+                    autoSave();
+                });
+
+                workspace.appendChild(pageDiv);
+               
+                const numBox = pageDiv.querySelector(".page-numbering");
+                if (numBox) {
+                    numBox.innerText = `- ${index + 1} -`;
+                }
+            });
+        }
+
+        function switchPage(pageId) {
+            state.activePageId = pageId;
+           
+            document.querySelectorAll(".page-item").forEach(item => item.classList.remove("active"));
+            document.querySelectorAll(".a4-page").forEach(page => page.classList.remove("active"));
+           
+            const listIdx = state.pages.findIndex(p => p.id === pageId);
+            if(listIdx !== -1) {
+                document.querySelectorAll(".page-item")[listIdx].classList.add("active");
+                document.getElementById(pageId).classList.add("active");
+            }
+           
+            updateContextControls();
+            autoSave();
+        }
+
+        function addNewPage(type) {
+            const nextIdx = state.pages.length + 1;
+            let title = `${nextIdx}쪽 - `;
+            let html = "";
+
+            switch(type) {
+                case 'worship':
+                    title += "추가 예배 순서";
+                    html = `
+                        <div class="section-header-title" contenteditable="true">[예배 순서 서식]</div>
+                        <div class="conductor-line" contenteditable="true">사회 : 편집 가능</div>
+                        <div class="program-row">
+                            <div class="program-title" contenteditable="true">새순서</div>
+                            <div class="program-leader"></div>
+                            <div class="program-name" contenteditable="true">담당자</div>
+                        </div>
+                        <div class="page-footer-tag" contenteditable="true">정책협의회/광주교회/27-02-00</div>
+                        <div class="page-numbering">- ${nextIdx} -</div>
+                    `;
+                    break;
+                case 'meeting':
+                    title += "추가 회의록";
+                    html = `
+                        <div class="section-header-title" contenteditable="true">[회의 안건 및 결의]</div>
+                        <div class="conductor-line" contenteditable="true">의장 : 회장 장로</div>
+                        <div class="agenda-box" contenteditable="true">안건 및 회의 내용을 기록해 주세요.</div>
+                        <div class="page-footer-tag" contenteditable="true">정책협의회/광주교회/27-02-00</div>
+                        <div class="page-numbering">- ${nextIdx} -</div>
+                    `;
+                    break;
+                case 'event':
+                    title += "추가 행사 계획안";
+                    html = `
+                        <div class="main-title" style="font-size:24px; margin-bottom:20px;" contenteditable="true">행 사 계 획 안</div>
+                        <table class="doc-table">
+                            <thead>
+                                <tr>
+                                    <th style="width: 12%;">구분</th>
+                                    <th style="width: 18%;">일자</th>
+                                    <th style="width: 40%;">사업내용</th>
+                                    <th style="width: 18%;">준비위원장</th>
+                                    <th style="width: 12%;">비고</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td contenteditable="true"></td>
+                                    <td contenteditable="true"></td>
+                                    <td class="align-left" contenteditable="true">내용 입력</td>
+                                    <td contenteditable="true"></td>
+                                    <td contenteditable="true"></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                        <div class="page-footer-tag" contenteditable="true">정책협의회/광주교회/27-02-00</div>
+                        <div class="page-numbering">- ${nextIdx} -</div>
+                    `;
+                    break;
+                case 'finance':
+                    title += "추가 회계 보고서";
+                    html = `
+                        <div class="main-title" style="font-size:26px; margin-bottom:5px; letter-spacing:4px;" contenteditable="true">회 계 보 고 서</div>
+                        <div class="finance-date-line" contenteditable="true">2027.01. 01 ~ 01. 01</div>
+                        <table class="doc-table">
+                            <thead>
+                                <tr>
+                                    <th colspan="2" style="width: 50%;">수 입 부</th>
+                                    <th colspan="2" style="width: 50%;">지 출 부</th>
+                                </tr>
+                                <tr>
+                                    <th style="width: 33%;">사업내용</th>
+                                    <th style="width: 17%;">금 액</th>
+                                    <th style="width: 33%;">사업내용</th>
+                                    <th style="width: 17%;">금 액</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td class="align-left" contenteditable="true"></td>
+                                    <td contenteditable="true"></td>
+                                    <td class="align-left" contenteditable="true"></td>
+                                    <td contenteditable="true"></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                        <div class="page-footer-tag" contenteditable="true">정책협의회/광주교회/27-02-00</div>
+                        <div class="page-numbering">- ${nextIdx} -</div>
+                    `;
+                    break;
+                default:
+                    title += "빈 서식 작업면";
+                    html = `
+                        <div class="blank-placeholder" contenteditable="true">자유롭게 텍스트 및 개체를 채워 편집할 수 있는 빈 본문 페이지 구역입니다.</div>
+                        <div class="page-footer-tag" contenteditable="true">정책협의회/광주교회/27-02-00</div>
+                        <div class="page-numbering">- ${nextIdx} -</div>
+                    `;
+            }
+
+            const newPageObj = {
+                id: "page-" + Date.now(),
+                type: type,
+                title: title,
+                html: html
+            };
+
+            state.pages.push(newPageObj);
+            state.activePageId = newPageObj.id;
+           
+            renderSidebarList();
+            renderWorkspacePages();
+            switchPage(newPageObj.id);
+        }
+
+        function deletePage(pageId) {
+            if(confirm("해당 추가 페이지를 삭제하시겠습니까? 완료 후 복구할 수 없습니다.")) {
+                const targetIdx = state.pages.findIndex(p => p.id === pageId);
+                state.pages.splice(targetIdx, 1);
+               
+                state.pages.forEach((page, i) => {
+                    const rawTitle = page.title.split(" - ")[1] || page.title;
+                    page.title = `${i + 1}쪽 - ${rawTitle}`;
+                });
+
+                state.activePageId = state.pages[targetIdx - 1]?.id || "page-1";
+                renderSidebarList();
+                renderWorkspacePages();
+                switchPage(state.activePageId);
+            }
+        }
+
+        function updateContextControls() {
+            const container = document.getElementById("contextControls");
+            const activePage = state.pages.find(p => p.id === state.activePageId);
+           
+            if (!activePage) return;
+
+            if (activePage.type === 'event') {
+                container.innerHTML = `
+                    <button class="btn btn-success" onclick="addTableRow('event')">➕ 행사계획 데이터 행 1칸 추가</button>
+                `;
+            } else if (activePage.type === 'finance') {
+                container.innerHTML = `
+                    <button class="btn btn-success" onclick="addTableRow('finance')">➕ 회계 수입/지출 행 1칸 추가</button>
+                `;
+            } else if (activePage.type === 'worship') {
+                container.innerHTML = `
+                    <button class="btn btn-secondary" onclick="addWorshipRow()">➕ 예배 순서 정렬 줄 추가</button>
+                `;
+            } else {
+                container.innerHTML = `<p style="font-size:12px; color:#94a3b8;">자유 텍스트 수정 모드 활성화 중</p>`;
+            }
+        }
+
+        function addTableRow(mode) {
+            const pageDiv = document.getElementById(state.activePageId);
+            const tableBody = pageDiv.querySelector("table tbody");
+           
+            if (!tableBody) return;
+
+            const tr = document.createElement("tr");
+           
+            if (mode === 'event') {
+                tr.innerHTML = `
+                    <td contenteditable="true"></td>
+                    <td contenteditable="true"></td>
+                    <td class="align-left" contenteditable="true"></td>
+                    <td contenteditable="true"></td>
+                    <td contenteditable="true"></td>
+                `;
+            } else if (mode === 'finance') {
+                tr.innerHTML = `
+                    <td class="align-left" contenteditable="true"></td>
+                    <td contenteditable="true"></td>
+                    <td class="align-left" contenteditable="true"></td>
+                    <td contenteditable="true"></td>
+                `;
+            }
+
+            tableBody.appendChild(tr);
+           
+            const activePageObj = state.pages.find(p => p.id === state.activePageId);
+            activePageObj.html = pageDiv.innerHTML;
+            autoSave();
+        }
+
+        function addWorshipRow() {
+            const pageDiv = document.getElementById(state.activePageId);
+            const targetContainer = pageDiv.querySelector("#worshipRowsContainer") || pageDiv;
+           
+            const rowDiv = document.createElement("div");
+            rowDiv.className = "program-row";
+            rowDiv.innerHTML = `
+                <div class="program-title" contenteditable="true">새순서</div>
+                <div class="program-leader"></div>
+                <div class="program-name" contenteditable="true">담당자</div>
+            `;
+           
+            const footerTag = pageDiv.querySelector(".page-footer-tag");
+            if(footerTag && targetContainer === pageDiv) {
+                pageDiv.insertBefore(rowDiv, footerTag);
+            } else {
+                targetContainer.appendChild(rowDiv);
+            }
+
+            const activePageObj = state.pages.find(p => p.id === state.activePageId);
+            activePageObj.html = pageDiv.innerHTML;
+            autoSave();
+        }
+
+        function autoSave() {
+            localStorage.setItem("CHURCH_DOC_BUILDER_DATA_V2", JSON.stringify(state));
+        }
+
+        function saveToLocalStorage() {
+            autoSave();
+            alert("브라우저 로컬 데이터 영역에 실시간 수정한 내용이 안전하게 수동 저장되었습니다.");
+        }
+
+        function resetToDefault() {
+            if(confirm("수정한 모든 내용과 업로드한 로고가 초기화되고 원본 양식으로 원복됩니다. 초기화할까요?")) {
+                localStorage.removeItem("CHURCH_DOC_BUILDER_DATA_V2");
+                initApp();
+            }
+        }
+
+        window.onload = initApp;
+    </script>
+</body>
+</html>
