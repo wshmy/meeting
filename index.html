@@ -37,16 +37,16 @@
             padding: 20px;
             display: flex;
             flex-direction: column;
-            gap: 20px;
+            gap: 15px;
             overflow-y: auto;
             height: 100%;
         }
 
         .sidebar h2 {
-            font-size: 18px;
+            font-size: 17px;
             font-weight: bold;
             line-height: 1.4;
-            margin-bottom: 10px;
+            margin-bottom: 5px;
             border-bottom: 1px solid #2c3545;
             padding-bottom: 10px;
         }
@@ -54,30 +54,31 @@
         .section-title {
             font-size: 12px;
             color: var(--text-muted);
-            margin-bottom: 8px;
+            margin-bottom: 6px;
             font-weight: bold;
+            margin-top: 5px;
         }
 
         .btn-group {
             display: flex;
             flex-direction: column;
-            gap: 8px;
+            gap: 6px;
         }
 
         .btn {
             width: 100%;
-            padding: 12px;
+            padding: 10px;
             border: none;
             border-radius: 6px;
             color: white;
-            font-size: 14px;
+            font-size: 13px;
             font-weight: bold;
             cursor: pointer;
             text-align: center;
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 8px;
+            gap: 6px;
         }
 
         .btn-success { background-color: var(--color-success); }
@@ -85,6 +86,48 @@
         .btn-danger { background-color: var(--color-danger); }
         .btn-primary { background-color: var(--color-primary); }
         .btn-outline { background-color: transparent; border: 1px solid var(--bg-sidebar-btn); color: var(--text-light); }
+
+        /* 서식 툴바 스타일 */
+        .toolbar {
+            background-color: rgba(255, 255, 255, 0.05);
+            padding: 10px;
+            border-radius: 6px;
+            border: 1px solid var(--bg-sidebar-btn);
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+        }
+
+        .btn-tool {
+            flex: 1;
+            min-width: 45px;
+            padding: 6px;
+            background-color: var(--bg-sidebar-btn);
+            border: 1px solid #3d485c;
+            color: white;
+            border-radius: 4px;
+            font-size: 12px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.2s;
+        }
+
+        .btn-tool:hover {
+            background-color: var(--color-primary);
+            border-color: var(--color-primary);
+        }
+
+        select.tool-select {
+            flex: 2;
+            min-width: 90px;
+            padding: 6px;
+            background-color: #12161f;
+            color: white;
+            border: 1px solid var(--bg-sidebar-btn);
+            border-radius: 4px;
+            font-size: 12px;
+            cursor: pointer;
+        }
 
         /* 목차/페이지 리스트 */
         .page-list {
@@ -94,7 +137,7 @@
         }
 
         .page-item {
-            padding: 12px;
+            padding: 10px;
             background-color: var(--bg-sidebar-btn);
             border-radius: 6px;
             font-size: 13px;
@@ -111,18 +154,18 @@
         .grid-2x2 {
             display: grid;
             grid-template-columns: 1fr 1fr;
-            gap: 8px;
+            gap: 6px;
         }
 
         .grid-2x2 .btn {
-            padding: 10px;
+            padding: 8px;
             font-size: 12px;
         }
 
         /* 표 만들기 컨트롤러 스타일 */
         .table-controller {
             background-color: rgba(255, 255, 255, 0.05);
-            padding: 12px;
+            padding: 10px;
             border-radius: 6px;
             border: 1px dashed var(--bg-sidebar-btn);
         }
@@ -130,17 +173,18 @@
         .table-input-group {
             display: flex;
             gap: 6px;
-            margin-bottom: 8px;
+            margin-bottom: 6px;
         }
 
         .table-input-group input {
             width: 100%;
-            padding: 8px;
+            padding: 6px;
             border-radius: 4px;
             border: 1px solid var(--bg-sidebar-btn);
             background-color: #12161f;
             color: white;
             text-align: center;
+            font-size: 12px;
         }
 
         /* 우측 문서 편집 영역 */
@@ -189,6 +233,7 @@
             font-weight: bold;
             margin: 40px 0;
             letter-spacing: 2px;
+            outline: none;
         }
 
         .logo-placeholder {
@@ -220,6 +265,7 @@
             font-size: 16px;
             line-height: 2;
             padding-left: 20px;
+            outline: none;
         }
 
         .doc-footer {
@@ -245,12 +291,12 @@
             font-size: 12px;
         }
 
-        /* 동적 생성 표(Table) 스타일 수정 */
+        /* 동적 생성 표(Table) 스타일 */
         .editable-table {
             width: 100%;
             border-collapse: collapse;
             margin: 15px 0;
-            table-layout: fixed; /* 너비 조절 최적화를 위해 고정 레이아웃 적용 */
+            table-layout: fixed;
         }
 
         .editable-table th, .editable-table td {
@@ -258,8 +304,9 @@
             padding: 8px;
             text-align: center;
             min-height: 30px;
-            position: relative; /* 너비 조절 바 배치를 위함 */
+            position: relative;
             word-break: break-all;
+            outline: none;
         }
 
         .editable-table th {
@@ -309,6 +356,24 @@
         </div>
 
         <div>
+            <div class="section-title">✏️ 글자 크기 및 서식 조절</div>
+            <div class="toolbar">
+                <button class="btn-tool" onclick="formatText('bold')" title="진하게"><b>B</b></button>
+                <button class="btn-tool" onclick="formatText('italic')" title="기울임"><i>I</i></button>
+                <button class="btn-tool" onclick="formatText('underline')" title="밑줄"><u>U</u></button>
+                <select class="tool-select" onchange="formatText('fontSize', this.value)">
+                    <option value="">글자 크기</option>
+                    <option value="2">작게</option>
+                    <option value="3">보통 (기본)</option>
+                    <option value="4">약간 크게</option>
+                    <option value="5">크게</option>
+                    <option value="6">매우 크게</option>
+                    <option value="7">최대 크기</option>
+                </select>
+            </div>
+        </div>
+
+        <div>
             <div class="section-title">현재 문서 페이지 목차</div>
             <div class="page-list" id="pageList">
                 <div class="page-item active" onclick="switchPage(1)">1쪽 - 공동 표지</div>
@@ -348,15 +413,11 @@
                 <button class="btn btn-secondary" style="color:white;" onclick="addPage('빈페이지')">+ 완전 빈 페이지 추가</button>
             </div>
         </div>
-       
-        <div style="font-size: 11px; color: var(--text-muted); text-align: center; margin-top: auto;">
-            현재 페이지 데이터 제어<br><span style="color:var(--color-success)">자유 텍스트 수정 모드 활성화 중</span>
-        </div>
     </div>
 
     <div class="preview-container">
         <div class="paper-page" id="paperPage">
-            <div class="doc-header">ht<br>기독교대한감리회 교회학교<br>Joongang Annual Conference of Korean Methodist</div>
+            <div class="doc-header">http://www.kmcja.kr<br>기독교대한감리회 교회학교<br>Joongang Annual Conference of Korean Methodist</div>
             <div class="doc-motto">표어: 꿈을 만드는 교회학교(행 2:17)</div>
            
             <div class="doc-title" contenteditable="true">27년 정책협의회</div>
@@ -385,7 +446,6 @@
     </div>
 
     <script>
-        // 타이틀 글씨(h2)에도 contenteditable="true"가 일괄 적용되도록 템플릿 수정
         let currentPage = 1;
         const pageTemplates = {
             1: ``,
@@ -398,10 +458,15 @@
         const coverBackup = document.getElementById('paperPage').innerHTML;
         pageTemplates[1] = coverBackup;
 
-        // 페이지 전환 함수
+        // 마우스로 드래그 선택한 글자 진하게, 크게 적용하는 함수
+        function formatText(command, value = null) {
+            document.execCommand(command, false, value);
+            document.getElementById('paperPage').focus();
+        }
+
+        // 페이지 전환 기능
         function switchPage(pageNum) {
             saveCurrentState();
-
             currentPage = pageNum;
            
             const items = document.querySelectorAll('.page-item');
@@ -415,7 +480,6 @@
             const pgNumDiv = document.querySelector('.page-number');
             if(pgNumDiv) pgNumDiv.innerText = `- ${pageNum} -`;
 
-            // 전환 후 표가 있다면 넓이 조절 핸들러 재부착
             initResizableTables();
         }
 
@@ -423,7 +487,6 @@
             pageTemplates[currentPage] = document.getElementById('paperPage').innerHTML;
         }
 
-        // 새 페이지 구성 추가 함수
         function addPage(type) {
             saveCurrentState();
             const list = document.getElementById('pageList');
@@ -443,14 +506,11 @@
             switchPage(nextNum);
         }
 
-        // 표 삽입 함수
         function insertTable() {
             const rows = document.getElementById('tableRows').value;
             const cols = document.getElementById('tableCols').value;
            
             let tableHtml = '<table class="editable-table">';
-           
-            // colgroup 지정으로 칸 비율 균등 초기화
             tableHtml += '<colgroup>';
             for(let j=0; j<cols; j++) {
                 tableHtml += `<col style="width: ${100/cols}%;">`;
@@ -481,7 +541,6 @@
             initResizableTables();
         }
 
-        // 줄 추가/삭제
         function alterRow(amount) {
             const table = document.querySelector('.editable-table');
             if (!table) { alert('편집 중인 페이지 내에 표가 존재하지 않습니다.'); return; }
@@ -502,7 +561,6 @@
             initResizableTables();
         }
 
-        // 칸 추가/삭제
         function alterCol(amount) {
             const table = document.querySelector('.editable-table');
             if (!table) { alert('편집 중인 페이지 내에 표가 존재하지 않습니다.'); return; }
@@ -532,7 +590,6 @@
                 }
             }
            
-            // 칸 개수가 변동되었으므로 너비 균등 재조정 후 핸들러 바인딩
             const cols = table.rows[0].cells.length;
             const colList = table.querySelectorAll('colgroup col');
             colList.forEach(c => c.style.width = `${100/cols}%`);
@@ -540,18 +597,15 @@
             initResizableTables();
         }
 
-        // 칸 넓이 조절(마우스 드래그) 기능 구현
         function initResizableTables() {
             const tables = document.querySelectorAll('.editable-table');
            
             tables.forEach(table => {
-                // 기존에 부착된 핸들러가 있다면 제거하고 새로 생성
                 table.querySelectorAll('.col-resize-handle').forEach(h => h.remove());
 
                 const headerRow = table.rows[0];
                 if (!headerRow) return;
 
-                // 대안 설정을 위해 colgroup이 없다면 생성
                 let colgroup = table.querySelector('colgroup');
                 if (!colgroup) {
                     colgroup = document.createElement('colgroup');
@@ -585,7 +639,6 @@
                             const deltaX = ev.pageX - startX;
                             const totalWidth = table.offsetWidth;
                            
-                            // 픽셀 변화량을 퍼센트 단위로 변환하여 두 칸의 넓이를 연동 제어
                             let newCurrPercent = ((startWidthCurr + deltaX) / totalWidth) * 100;
                             let newNextPercent = ((startWidthNext - deltaX) / totalWidth) * 100;
 
@@ -607,7 +660,6 @@
             });
         }
 
-        // 로고 파일 불러오기
         function loadLogo(event) {
             const reader = new FileReader();
             reader.onload = function() {
@@ -619,22 +671,21 @@
             }
         }
 
-        // 브라우저 저장 및 불러오기 복원
         function saveData() {
-            saveCurrentState();
-            localStorage.setItem('church_doc_data_v2', JSON.stringify(pageTemplates));
+            switchPage(currentPage);
+            localStorage.setItem('church_doc_data_v3', JSON.stringify(pageTemplates));
             alert('현재까지의 작업 내용이 브라우저에 성공적으로 임시 저장되었습니다.');
         }
 
         function resetForm() {
             if(confirm('모든 내용이 초기화됩니다. 원하십니까?')) {
-                localStorage.removeItem('church_doc_data_v2');
+                localStorage.removeItem('church_doc_data_v3');
                 window.location.reload();
             }
         }
 
         window.onload = function() {
-            const saved = localStorage.getItem('church_doc_data_v2');
+            const saved = localStorage.getItem('church_doc_data_v3');
             if (saved) {
                 Object.assign(pageTemplates, JSON.parse(saved));
                 document.getElementById('paperPage').innerHTML = pageTemplates[1];
