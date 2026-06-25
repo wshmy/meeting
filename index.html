@@ -86,6 +86,8 @@
         .btn-danger { background-color: var(--color-danger); }
         .btn-primary { background-color: var(--color-primary); }
         .btn-outline { background-color: transparent; border: 1px solid var(--bg-sidebar-btn); color: var(--text-light); }
+        .btn-info { background-color: #17a2b8; color: white; }
+        .btn-warning { background-color: #ffc107; color: #212529; }
 
         /* 서식 툴바 스타일 */
         .toolbar {
@@ -268,7 +270,6 @@
             outline: none;
         }
 
-        /* 이미지 데이터 기반 하단 문구 스타일 전면 수정 */
         .doc-footer-container {
             border-top: 2px solid #000;
             padding-top: 25px;
@@ -298,7 +299,7 @@
         .doc-footer-main {
             font-size: 30px;
             font-weight: 800;
-            color: #0e2b67; /* 이미지 속 신뢰감 있는 딥네이비 색상 반영 */
+            color: #0e2b67;
             letter-spacing: 1px;
             font-family: 'Malgun Gothic', '맑은 고딕', sans-serif;
         }
@@ -367,10 +368,13 @@
         </div>
 
         <div>
-            <div class="section-title">문서 전체 관리</div>
+            <div class="section-title">문서 전체 및 기기 연동 관리</div>
             <div class="btn-group">
                 <button class="btn btn-success" onclick="window.print()">🖨️ PDF 저장 및 전체 인쇄</button>
-                <button class="btn btn-secondary" onclick="saveData()">💾 브라우저 수동 저장</button>
+                <button class="btn btn-info" onclick="exportToFile()">💾 문서 데이터 파일로 내보내기</button>
+                <button class="btn btn-warning" onclick="document.getElementById('importFileInput').click()">📂 파일로 저장된 문서 불러오기</button>
+                <input type="file" id="importFileInput" accept=".json" style="display:none;" onchange="importFromFile(event)">
+                <button class="btn btn-secondary" onclick="saveData()">💾 브라우저 임시 저장 (현재 기기)</button>
                 <button class="btn btn-danger" onclick="resetForm()">🔄 기본 양식 초기화</button>
             </div>
         </div>
@@ -469,7 +473,7 @@
 
     <script>
         let currentPage = 1;
-        const pageTemplates = {
+        let pageTemplates = {
             1: ``,
             2: `<h2 style="text-align:center; margin-bottom:20px;" contenteditable="true">제1부 예배 순서</h2><div contenteditable="true"><p>묵도 / 다같이</p><p>찬송 / 28장</p><p>기도 / 부회장단</p></div>`,
             3: `<h2 style="text-align:center; margin-bottom:20px;" contenteditable="true">제2부 회의 절차</h2><div contenteditable="true"><p>1. 개회 선언</p><p>2. 전회록 낭독</p><p>3. 주요 안건 토의</p></div>`,
@@ -480,22 +484,18 @@
         const coverBackup = document.getElementById('paperPage').innerHTML;
         pageTemplates[1] = coverBackup;
 
-        // 마우스로 드래그 선택한 글자 진하게, 크게 적용하는 함수
+        // 글자 선택 서식 적용 함수
         function formatText(command, value = null) {
             document.execCommand(command, false, value);
             document.getElementById('paperPage').focus();
         }
 
-        // 페이지 전환 기능
+        // 페이지 전환 및 목록 새로고침
         function switchPage(pageNum) {
             saveCurrentState();
             currentPage = pageNum;
            
-            const items = document.querySelectorAll('.page-item');
-            items.forEach((item, index) => {
-                if(index + 1 === pageNum) item.classList.add('active');
-                else item.classList.remove('active');
-            });
+            updatePageListUI();
 
             document.getElementById('paperPage').innerHTML = pageTemplates[pageNum];
            
@@ -509,23 +509,85 @@
             pageTemplates[currentPage] = document.getElementById('paperPage').innerHTML;
         }
 
+        function updatePageListUI() {
+            const list = document.getElementById('pageList');
+            list.innerHTML = '';
+           
+            const totalPages = Object.keys(pageTemplates).length;
+            for(let i=1; i<=totalPages; i++) {
+                const div = document.createElement('div');
+                div.className = 'page-item' + (i === currentPage ? ' active' : '');
+               
+                let pageTitle = `${i}쪽 - `;
+                if(i === 1) pageTitle += "공동 표지";
+                else if(i === 2) pageTitle += "제1부 예배";
+                else if(i === 3) pageTitle += "제2부 회의";
+                else if(i === 4) pageTitle += "행사 계획안";
+                else if(i === 5) pageTitle += "회계 보고서";
+                else pageTitle += "추가 구성 페이지";
+
+                div.innerText = pageTitle;
+                div.onclick = function() { switchPage(i); };
+                list.appendChild(div);
+            }
+        }
+
         function addPage(type) {
             saveCurrentState();
-            const list = document.getElementById('pageList');
-            const nextNum = list.children.length + 1;
+            const nextNum = Object.keys(pageTemplates).length + 1;
            
-            let title = `${nextNum}쪽 - ${type}`;
             let baseHtml = `<h2 style="text-align:center; margin-bottom:20px;" contenteditable="true">${type}</h2><div contenteditable="true"><p>내용을 입력하세요.</p></div><div class="page-number">- ${nextNum} -</div>`;
-
             pageTemplates[nextNum] = baseHtml;
 
-            const div = document.createElement('div');
-            div.className = 'page-item';
-            div.innerText = title;
-            div.onclick = function() { switchPage(nextNum); };
-            list.appendChild(div);
-
             switchPage(nextNum);
+        }
+
+        // [핵심 기능] 데이터를 .json 파일로 다운로드 내보내기
+        function exportToFile() {
+            switchPage(currentPage); // 현재 페이지 최종 상태 저장
+           
+            const dataStr = JSON.stringify(pageTemplates, null, 4);
+            const dataBlob = new Blob([dataStr], { type: 'application/json' });
+           
+            const downloadLink = document.createElement('a');
+            downloadLink.href = URL.createObjectURL(dataBlob);
+            downloadLink.download = '교회학교_문서데이터.json';
+           
+            document.body.appendChild(downloadLink);
+            downloadLink.click();
+            document.body.removeChild(downloadLink);
+        }
+
+        // [핵심 기능] 저장된 파일에서 데이터를 불러와 화면 구성 복원하기
+        function importFromFile(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const importedData = JSON.parse(e.target.result);
+                    if (typeof importedData === 'object' && importedData['1']) {
+                        pageTemplates = importedData;
+                        currentPage = 1;
+                       
+                        // 화면 복구 및 UI 동기화
+                        document.getElementById('paperPage').innerHTML = pageTemplates[1];
+                        updatePageListUI();
+                        initResizableTables();
+                       
+                        // 브라우저 캐시 저장소에도 자동 갱신
+                        localStorage.setItem('church_doc_data_v5', JSON.stringify(pageTemplates));
+                        alert('저장된 문서 파일 데이터를 성공적으로 정상 동기화하여 불려왔습니다!');
+                    } else {
+                        alert('정상적인 교회학교 문서 데이터 파일 형식이 아닙니다.');
+                    }
+                } catch (err) {
+                    alert('파일을 읽는 도중 오류가 발생했습니다: ' + err.message);
+                }
+            };
+            reader.readAsText(file, 'UTF-8');
+            event.target.value = ''; // 입력 초기화
         }
 
         function insertTable() {
@@ -695,22 +757,23 @@
 
         function saveData() {
             switchPage(currentPage);
-            localStorage.setItem('church_doc_data_v4', JSON.stringify(pageTemplates));
+            localStorage.setItem('church_doc_data_v5', JSON.stringify(pageTemplates));
             alert('현재까지의 작업 내용이 브라우저에 성공적으로 임시 저장되었습니다.');
         }
 
         function resetForm() {
             if(confirm('모든 내용이 초기화됩니다. 원하십니까?')) {
-                localStorage.removeItem('church_doc_data_v4');
+                localStorage.removeItem('church_doc_data_v5');
                 window.location.reload();
             }
         }
 
         window.onload = function() {
-            const saved = localStorage.getItem('church_doc_data_v4');
+            const saved = localStorage.getItem('church_doc_data_v5');
             if (saved) {
                 Object.assign(pageTemplates, JSON.parse(saved));
                 document.getElementById('paperPage').innerHTML = pageTemplates[1];
+                updatePageListUI();
             }
             initResizableTables();
         }
