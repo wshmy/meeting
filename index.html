@@ -261,31 +261,51 @@
 
         .doc-info {
             margin-top: auto;
-            margin-bottom: 60px;
-            font-size: 16px;
-            line-height: 2;
+            margin-bottom: 50px;
+            font-size: 17px;
+            line-height: 2.2;
             padding-left: 20px;
             outline: none;
         }
 
-        .doc-footer {
+        /* 이미지 데이터 기반 하단 문구 스타일 전면 수정 */
+        .doc-footer-container {
             border-top: 2px solid #000;
-            padding-top: 15px;
+            padding-top: 25px;
             display: flex;
-            justify-content: space-between;
+            justify-content: center;
             align-items: center;
-            font-weight: bold;
-            font-size: 18px;
+            margin-bottom: 15px;
         }
 
-        .doc-footer .sub {
-            font-size: 14px;
-            font-weight: normal;
+        .doc-footer-flex {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .doc-footer-sub {
+            font-size: 13px;
+            font-weight: bold;
+            color: #333;
+            line-height: 1.3;
+            text-align: center;
+            letter-spacing: 1px;
+            border-right: 1px solid #ccc;
+            padding-right: 20px;
+        }
+
+        .doc-footer-main {
+            font-size: 30px;
+            font-weight: 800;
+            color: #0e2b67; /* 이미지 속 신뢰감 있는 딥네이비 색상 반영 */
+            letter-spacing: 1px;
+            font-family: 'Malgun Gothic', '맑은 고딕', sans-serif;
         }
 
         .page-number {
             position: absolute;
-            bottom: 20mm;
+            bottom: 15mm;
             left: 50%;
             transform: translateX(-50%);
             font-size: 12px;
@@ -417,7 +437,7 @@
 
     <div class="preview-container">
         <div class="paper-page" id="paperPage">
-            <div class="doc-header">http://www.kmcja.kr<br>기독교대한감리회 교회학교<br>Joongang Annual Conference of Korean Methodist</div>
+            <div class="doc-header">기독교대한감리회 교회학교<br>Joongang Annual Conference of Korean Methodist</div>
             <div class="doc-motto">표어: 꿈을 만드는 교회학교(행 2:17)</div>
            
             <div class="doc-title" contenteditable="true">27년 정책협의회</div>
@@ -432,14 +452,16 @@
             </div>
 
             <div class="doc-info" contenteditable="true">
-                <p><strong>일시:</strong> 2027년 3월 13일(토) 오전 11시</p>
-                <p><strong>장소:</strong> 광주교회(광주하남 지방)</p>
-                <p><strong>강사:</strong> 박윤수 장로(구리지방, 하늘샘교회)</p>
+                <p>◎ <strong>일시 :</strong> 2027년 3월 13일(토) 오전 11시</p>
+                <p>◎ <strong>장소 :</strong> 광주교회(광주하남 지방)</p>
+                <p>◎ <strong>회장 :</strong> 박윤수 장로</p>
             </div>
 
-            <div class="doc-footer">
-                <div class="sub">기독교대한감리회</div>
-                <div>교회학교 중앙연회연합회</div>
+            <div class="doc-footer-container">
+                <div class="doc-footer-flex">
+                    <div class="doc-footer-sub">기 독 교<br>대한감리회</div>
+                    <div class="doc-footer-main">교회학교 중앙연회연합회</div>
+                </div>
             </div>
             <div class="page-number">- 1 -</div>
         </div>
@@ -673,19 +695,19 @@
 
         function saveData() {
             switchPage(currentPage);
-            localStorage.setItem('church_doc_data_v3', JSON.stringify(pageTemplates));
+            localStorage.setItem('church_doc_data_v4', JSON.stringify(pageTemplates));
             alert('현재까지의 작업 내용이 브라우저에 성공적으로 임시 저장되었습니다.');
         }
 
         function resetForm() {
             if(confirm('모든 내용이 초기화됩니다. 원하십니까?')) {
-                localStorage.removeItem('church_doc_data_v3');
+                localStorage.removeItem('church_doc_data_v4');
                 window.location.reload();
             }
         }
 
         window.onload = function() {
-            const saved = localStorage.getItem('church_doc_data_v3');
+            const saved = localStorage.getItem('church_doc_data_v4');
             if (saved) {
                 Object.assign(pageTemplates, JSON.parse(saved));
                 document.getElementById('paperPage').innerHTML = pageTemplates[1];
